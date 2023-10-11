@@ -7,14 +7,16 @@ import {
 } from 'react-native';
 import React from 'react';
 
-const FireButton = ({onPress, onPressOut, onPressIn}) => {
+const FireButton = ({onPress, onPressOut, onPressIn, isFiring}) => {
   return (
     <TouchableOpacity
       style={styles.container}
       activeOpacity={0.8}
       onPress={onPress}
       onPressIn={onPressIn}
-      onPressOut={onPressOut}>
+      onPressOut={onPressOut}
+      // disabled={isFiring ? true : false}
+    >
       <Text style={styles.text}>FIRE</Text>
     </TouchableOpacity>
   );

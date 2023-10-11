@@ -39,6 +39,7 @@ const BleDev = () => {
   const peripherals = new Map();
   const [isScanning, setIsScanning] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [isFired, setIsFired] = useState(false);
   const [discoveredDevices, setDiscoveredDevices] = useState([]);
   const [connectedDevices, setConnectedDevices] = useState([]);
   const [peripheralServices, setPeripheralServices] = useState('');
@@ -332,14 +333,22 @@ const BleDev = () => {
         <View style={styles.fireButtonContainer}>
           {isConnected ? (
             <FireButton
-              onPressIn={() => writeToPeripheral(discoveredDevices[0], 'in')}
-              onPressOut={() => {
-                writeToPeripheral(discoveredDevices[0], 'out');
+              onPressIn={() => {
+                setIsFired(true);
+                writeToPeripheral(discoveredDevices[0], 'in');
+                setTimeout(() => {
+                  setIsFired(false);
+                  writeToPeripheral(discoveredDevices[0], 'out');
+                }, 200);
               }}
+              // onPressOut={() => {
+              //   writeToPeripheral(discoveredDevices[0], 'out');
+              // }}
               // onPress={() => {
               //   writeToPeripheral(discoveredDevices[0], 'in');
               //   writeToPeripheral(discoveredDevices[0], 'out');
               // }}
+              isFiring={isFired}
             />
           ) : null}
         </View>
