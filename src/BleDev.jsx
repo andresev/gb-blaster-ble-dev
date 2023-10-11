@@ -332,14 +332,14 @@ const BleDev = () => {
         <View style={styles.fireButtonContainer}>
           {isConnected ? (
             <FireButton
-              // onPressIn={() => writeToPeripheral(discoveredDevices[0], 'in')}
-              // onPressOut={() => {
-              //   writeToPeripheral(discoveredDevices[0], 'out');
-              // }}
-              onPress={() => {
-                writeToPeripheral(discoveredDevices[0], 'in');
+              onPressIn={() => writeToPeripheral(discoveredDevices[0], 'in')}
+              onPressOut={() => {
                 writeToPeripheral(discoveredDevices[0], 'out');
               }}
+              // onPress={() => {
+              //   writeToPeripheral(discoveredDevices[0], 'in');
+              //   writeToPeripheral(discoveredDevices[0], 'out');
+              // }}
             />
           ) : null}
         </View>
