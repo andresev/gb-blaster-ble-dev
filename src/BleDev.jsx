@@ -20,6 +20,7 @@ import {
   NativeEventEmitter,
   ImageBackground,
   Image,
+  Pressable,
 } from 'react-native';
 import {Buffer} from 'buffer';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -58,18 +59,18 @@ const BleDev = () => {
       handleGetDiscoveredDevices();
     });
 
-    // const esp32Peripheral = '43a617cc-9c0e-0681-d3be-b2041205e17e';
+    const esp32Peripheral = 'b9a121b9-5dca-e646-6e0c-9dc371b07517';
     handleBleScan();
     let stopDiscoverListener = BleManagerEmitter.addListener(
       'BleManagerDiscoverPeripheral',
       peripheral => {
         console.log('Peripheral disover: ', peripheral);
-        // if (peripheral.id === esp32Peripheral) {
-        //   connectToPeripheral(peripheral);
-        //   setDiscoveredDevices(Array.from(peripherals.values()));
-        // }
-        peripherals.set(peripheral.id, peripheral);
-        setDiscoveredDevices(Array.from(peripherals.values()));
+        if (peripheral.id === esp32Peripheral) {
+          connectToPeripheral(peripheral);
+          setDiscoveredDevices(Array.from(peripherals.values()));
+        }
+        // peripherals.set(peripheral.id, peripheral);
+        // setDiscoveredDevices(Array.from(peripherals.values()));
       },
     );
     let stopConnectListener = BleManagerEmitter.addListener(
@@ -253,6 +254,22 @@ const BleDev = () => {
       .catch(err => console.log('Could not retrieve: ', err));
   };
 
+  const handlePressIn = () => {
+    console.log('PRESS IN');
+    setIsFired(true);
+    writeToPeripheral(discoveredDevices[0], 'in');
+    setTimeout(() => {
+      writeToPeripheral(discoveredDevices[0], 'out');
+    }, 100);
+  };
+
+  // Function to stop sending commands when the button is released
+  const handlePressOut = () => {
+    console.log('PRESS OUT');
+    setIsFired(false);
+    writeToPeripheral(discoveredDevices[0], 'out');
+  };
+
   const RenderItem = ({peripheral}) => {
     const {name, rssi, id, connected} = peripheral;
 
@@ -269,20 +286,29 @@ const BleDev = () => {
               <Text style={styles.deviceName}>{name}</Text>
               <Text style={styles.deviceInfo}>RSSI: {rssi}</Text>
             </View>
-            <TouchableOpacity
-              onPress={async () => connected && writeToPeripheral(peripheral)}
-              style={styles.connectButton}>
-              <Text style={[styles.connectButtonText]}>
-                {connected ? 'Write' : null}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={async () => connected && readFromPeripheral(peripheral)}
-              style={styles.connectButton}>
-              <Text style={[styles.connectButtonText]}>
-                {connected ? 'Retrieve' : null}
-              </Text>
-            </TouchableOpacity>
+            {connected && (
+              <>
+                <TouchableOpacity
+                  onPress={async () =>
+                    connected && writeToPeripheral(peripheral)
+                  }
+                  style={styles.connectButton}>
+                  <Text style={[styles.connectButtonText]}>
+                    {connected ? 'Write' : null}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={async () =>
+                    connected && readFromPeripheral(peripheral)
+                  }
+                  style={styles.connectButton}>
+                  <Text style={[styles.connectButtonText]}>
+                    {connected ? 'Retrieve' : null}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
             <TouchableOpacity
               onPress={async () =>
                 connected
@@ -305,15 +331,9 @@ const BleDev = () => {
       style={styles.imgBackgroundContainer}
       source={require('./assets/img/background.png')}>
       <View style={styles.container}>
-        {/* DEV STARTS HERE */}
-        <View style={styles.topContainer}>
-          {/* <Text style={styles.title}>CONTROLLER</Text> */}
-          <View style={styles.buttonContainer}>
-            <Button title="SCAN" onPress={handleBleScan} />
-          </View>
-        </View>
+        {/* <View style={styles.topContainer}></View> */}
 
-        <View style={{flex: 0.1}}>
+        <View style={{flex: 0.1, marginBottom: 20}}>
           {discoveredDevices.length > 0 ? (
             <FlatList
               style={[backgroundStyle, styles.flatlist]}
@@ -326,6 +346,9 @@ const BleDev = () => {
             <Text style={{alignSelf: 'center'}}>No discovered devices</Text>
           )}
         </View>
+        <Pressable style={styles.scanButton} onPress={handleBleScan}>
+          <Text style={styles.connectButtonText}>SCAN</Text>
+        </Pressable>
         <Image
           style={styles.logo}
           source={require('./assets/img/gb-logo.png')}
@@ -333,14 +356,16 @@ const BleDev = () => {
         <View style={styles.fireButtonContainer}>
           {isConnected ? (
             <FireButton
-              onPressIn={() => {
-                setIsFired(true);
-                writeToPeripheral(discoveredDevices[0], 'in');
-                setTimeout(() => {
-                  setIsFired(false);
-                  writeToPeripheral(discoveredDevices[0], 'out');
-                }, 200);
-              }}
+              // onPressIn={() => {
+              //   setIsFired(true);
+              //   writeToPeripheral(discoveredDevices[0], 'in');
+              //   setTimeout(() => {
+              //     setIsFired(false);
+              //     writeToPeripheral(discoveredDevices[0], 'out');
+              //   }, 100);
+              // }}
+              onPressIn={handlePressIn}
+              // onPressOut={handlePressOut}
               // onPressOut={() => {
               //   writeToPeripheral(discoveredDevices[0], 'out');
               // }}
@@ -348,7 +373,7 @@ const BleDev = () => {
               //   writeToPeripheral(discoveredDevices[0], 'in');
               //   writeToPeripheral(discoveredDevices[0], 'out');
               // }}
-              isFiring={isFired}
+              // isFiring={isFired}
             />
           ) : null}
         </View>
@@ -376,6 +401,17 @@ const styles = {
   title: {
     fontSize: 20,
   },
+  scanButton: {
+    marginBottom: 10,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    borderRadius: 10,
+    height: 40,
+    width: 100,
+    backgroundColor: '#006ee6',
+  },
   buttonContainer: {
     alignItems: 'center',
     rowGap: 10,
@@ -398,12 +434,12 @@ const styles = {
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: 'lightgreen',
+    backgroundColor: '#006ee6',
   },
   connectButtonText: {
     fontSize: 12,
-    color: 'black',
+    fontWeight: '800',
+    color: 'white',
   },
   fireButtonContainer: {
     flex: 1,
